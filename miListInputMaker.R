@@ -1,7 +1,7 @@
 miListInput<-function(data_PSIs, data_FPKMs, R){
   filter_vec_FPKM<-apply(data_FPKMs, MARGIN = 1, FUN = "var")
-  FPKMs_filter<-as.matrix(data_FPKMs[(filter_vec_FPKM>=quantile(filter_vec_FPKM,0.25)),])
-  FPKMs_filter<-FPKMs_filter[apply(FPKMs_filter, MARGIN = 1, FUN = function(x) median(x)>=0.5),]
+  FPKMs_filter<-as.matrix(data_FPKMs[(filter_vec_FPKM>=quantile(filter_vec_FPKM,0.75)),])
+  FPKMs_filter<-FPKMs_filter[apply(FPKMs_filter, MARGIN = 1, FUN = function(x) median(x)>=2),]
   print(dim(FPKMs_filter))
   filter_breaks_FPKM<-apply(FPKMs_filter, MARGIN=1, FUN = function(x) length(unique(x))>7)
   FPKMs_filter<-FPKMs_filter[filter_breaks_FPKM,]
@@ -9,8 +9,10 @@ miListInput<-function(data_PSIs, data_FPKMs, R){
   print(dim(FPKMs_filter))
   #print(dim(FPKMs_filter))
   filter_vec_PSI<-apply(data_PSIs, MARGIN = 1, FUN = "var")
-  PSIs_filter<-as.matrix(data_PSIs[(filter_vec_PSI>=quantile(filter_vec_PSI,0.25)),])
-  PSIs_filter<-PSIs_filter[apply(PSIs_filter, MARGIN = 1, FUN = function(x) all(any(x>=0.1), any(x<=0.9))),]
+  hist(filter_vec_PSI)
+  PSIs_filter<-as.matrix(data_PSIs[(filter_vec_PSI>=quantile(filter_vec_PSI,0.75)),])
+  print(quantile(filter_vec_PSI,0.25))
+  PSIs_filter<-PSIs_filter[apply(PSIs_filter, MARGIN = 1, FUN = function(x) all(sum(x>=0.1)>=6, sum(x<=0.9)>=6)),]
   print(dim(PSIs_filter))
   filter_breaks_PSI<-apply(PSIs_filter, MARGIN=1, FUN = function(x) length(unique(x))>7)
   PSIs_filter<-PSIs_filter[filter_breaks_PSI,]
@@ -19,7 +21,7 @@ miListInput<-function(data_PSIs, data_FPKMs, R){
   #
   gr<-expand.grid(psi.n=row.names(PSIs_filter), gene.n=row.names(FPKMs_filter))
   gr.dat<-cbind(#PSI_NAME=row.names(PSIs_filter[gr$psi.n,]), 
-                #GENE_NAME=row.names(FPKMs_filter[gr$gene.n,]), 
+  #              #GENE_NAME=row.names(FPKMs_filter[gr$gene.n,]), 
                 PSIs_filter[gr$psi.n,], 
                 FPKMs_filter[gr$gene.n,])
   out<-list(DATA=gr.dat, NAMES=gr)
