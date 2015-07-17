@@ -1,4 +1,4 @@
-miListInput<-function(data_PSIs, data_FPKMs, R){
+miListInput<-function(data_PSIs, data_FPKMs){
   #filter on FPKM variance
   filter_vec_FPKM<-apply(data_FPKMs, MARGIN = 1, FUN = "var")
   FPKMs_filter<-as.matrix(data_FPKMs[(filter_vec_FPKM>=quantile(filter_vec_FPKM,0.75)),])
@@ -14,9 +14,7 @@ miListInput<-function(data_PSIs, data_FPKMs, R){
   print(dim(PSIs_filter))
   #
   gr<-expand.grid(psi.n=row.names(PSIs_filter), gene.n=row.names(FPKMs_filter))
-  gr.dat<-cbind(#PSI_NAME=row.names(PSIs_filter[gr$psi.n,]), 
-  #              #GENE_NAME=row.names(FPKMs_filter[gr$gene.n,]), 
-                PSIs_filter[gr$psi.n,], 
+  gr.dat<-cbind(PSIs_filter[gr$psi.n,], 
                 FPKMs_filter[gr$gene.n,])
   out<-list(DATA=gr.dat, NAMES=gr)
   return(out)
