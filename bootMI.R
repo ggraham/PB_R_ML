@@ -12,7 +12,6 @@ bootMI<-function(x=NULL, ind, dat=NULL){
     ind<-sample(24, 24, replace = TRUE)
     x1 <-dat[ind]
     x2 <-dat[(ind+24)]
-    
   }
   while (min(x2)==max(x2)){
     print(paste("Sampling error type 2", x2))
