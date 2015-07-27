@@ -16,10 +16,10 @@ parseAndAnnotate<-function(PBOfInterest, pbGRanges, txdb){
       delVec<-c(delVec, i)
       next()
     }
-    GOs.terms<-select(org.Hs.eg.db, keys = set$tx_name, columns = c("SYMBOL", "GO"), keytype = c("UCSCKG"))
-    listOut$BP[[i]]<-c(unique(GOs.terms$GO[GOs.terms$ONTOLOGY=="BP"]))
-    listOut$CC[[i]]<-c(unique(GOs.terms$GO[GOs.terms$ONTOLOGY=="CC"]))
-    listOut$MF[[i]]<-c(unique(GOs.terms$GO[GOs.terms$ONTOLOGY=="MF"]))
+    GOs.terms<-select(org.Hs.eg.db, keys = set$tx_name, columns = c("SYMBOL", "GOALL"), keytype = c("UCSCKG"))
+    listOut$BP[[i]]<-c(unique(GOs.terms$GOALL[GOs.terms$ONTOLOGY=="BP"]))
+    listOut$CC[[i]]<-c(unique(GOs.terms$GOALL[GOs.terms$ONTOLOGY=="CC"]))
+    listOut$MF[[i]]<-c(unique(GOs.terms$GOALL[GOs.terms$ONTOLOGY=="MF"]))
   }
   close(pB)
   listOut$BP<-listOut$BP[-delVec]
