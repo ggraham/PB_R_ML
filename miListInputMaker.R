@@ -15,9 +15,9 @@ miListInput<-function(data_PSIs, data_FPKMs){
   #PSIs_filter<-PSIs_filter[apply(PSIs_filter, MARGIN = 1, FUN = function(x) all(sum(x>=0.1)>=2, sum(x<=0.9)>=2)),]
   print(dim(PSIs_filter))
   #
-  gr<-expand.grid(psi.n=row.names(PSIs_filter), gene.n=row.names(FPKMs_filter))
-  gr.dat<-cbind(PSIs_filter[gr$psi.n,], 
-                FPKMs_filter[gr$gene.n,])
-  out<-list(DATA=gr.dat, NAMES=gr)
-  return(out)
+  #gr<-expand.grid(psi.n=row.names(PSIs_filter), gene.n=row.names(FPKMs_filter))
+  #gr.dat<-cbind(PSIs_filter[gr$psi.n,], 
+  #              FPKMs_filter[gr$gene.n,])
+  #out<-list(DATA=gr.dat, NAMES=gr)
+  return(list(FPKM=FPKMs_filter, PSI=PSIs_filter))
 }

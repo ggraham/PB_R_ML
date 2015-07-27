@@ -14,7 +14,7 @@ ggPlotIsoforms<-function(gene=NULL, samples=c(25:27), order=25, sampleNames=c("T
   plot_frame<-data.frame(Isoform=rep(isoNames, length(samples)),FPKM=vec,Sample=rep(sampleNames, each = length(isoNames)))
   #print(as.numeric(levels(plot_frame$FPKM)))
   #plot_frame$FPKM<-as.numeric(levels(plot_frame$FPKM))[as.numeric(plot_frame$FPKM)]
-  plot_frame[plot_frame$FPKM<=0.1,2]<-0.1
+  plot_frame[plot_frame$FPKM<=1,2]<-1
   print((plot_frame))
   a<-ggplot(data = plot_frame, aes(x=Isoform, y=FPKM, fill=Sample))
   a<-a+geom_bar(stat = "identity", position="dodge")
