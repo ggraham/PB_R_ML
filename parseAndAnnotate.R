@@ -1,0 +1,33 @@
+parseAndAnnotate<-function(PBOfInterest, pbGRanges, txdb){
+  listOut<-list(BP=list(), CC=list(), MF=list())
+  delVec<-c()
+  validKeys<-AnnotationDbi::keys(org.Hs.eg.db, keytype = "UCSCKG")
+  pB<-txtProgressBar(min=1, max=length(PBOfInterest), width = 100, title = "Retriving GO terms", style = 3)
+  for ( i in 1:length(PBOfInterest)){
+    if ( i %% 10 == 0 ){
+      setTxtProgressBar(pb = pB, value = i)
+    }
+    set<-transcriptsByOverlaps(x = txdb, ranges = pbGRanges[pbGRanges$gene_id==PBOfInterest[i]], type="any")
+    if (length(set)==0){
+      delVec<-c(delVec, i)
+      next()
+    }
+    if (!all((keys = set$tx_name) %in% validKeys)){
+      delVec<-c(delVec, i)
+      next()
+    }
+    GOs.terms<-select(org.Hs.eg.db, keys = set$tx_name, columns = c("SYMBOL", "GO"), keytype = c("UCSCKG"))
+    listOut$BP[[i]]<-c(unique(GOs.terms$GO[GOs.terms$ONTOLOGY=="BP"]))
+    listOut$CC[[i]]<-c(unique(GOs.terms$GO[GOs.terms$ONTOLOGY=="CC"]))
+    listOut$MF[[i]]<-c(unique(GOs.terms$GO[GOs.terms$ONTOLOGY=="MF"]))
+  }
+  close(pB)
+  listOut$BP<-listOut$BP[-delVec]
+  listOut$MF<-listOut$MF[-delVec]
+  listOut$CC<-listOut$CC[-delVec]
+  PBOfInterest.trim<-PBOfInterest[-delVec]
+  names(listOut$BP)<-PBOfInterest.trim
+  names(listOut$CC)<-PBOfInterest.trim
+  names(listOut$MF)<-PBOfInterest.trim
+  return(listOut)
+}
