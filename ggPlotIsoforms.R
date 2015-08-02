@@ -1,8 +1,11 @@
 ggPlotIsoforms<-function(gene=NULL, samples=c(25:27), order=25, sampleNames=c("TC32 WT", "TC32 shFli1", "TC32 YK"), isoform_dat=isoform_FPKMs){
   require(ggplot2)
-  isoNames<-grep(gene, row.names(isoform_dat), value = TRUE)
+  require(wesanderson)
+  isoNames<-grep(gene, row.names(isoform_dat), value = TRUE, fixed = TRUE)
+  #isoNames<-factor(isoNames, levels = rev(isoNames))
+  #sampleNames<-factor(sampleNames, levels=rev(sampleNames))
   #isoNames<-reorder(isoNames, as.numeric(isoform_dat[isoNames,order]))
-  isoNames<-factor(isoNames, levels = isoNames[order(isoform_dat[isoNames, order], decreasing = FALSE)])
+  #isoNames<-factor(isoNames, levels = isoNames[order(apply(isoform_dat[isoNames, 1:24],1,mean), decreasing = FALSE)])
   #print(isoNames)
   #plot_frame<-data.frame(stringsAsFactors = TRUE)
   vec<-c()
@@ -10,15 +13,31 @@ ggPlotIsoforms<-function(gene=NULL, samples=c(25:27), order=25, sampleNames=c("T
     vec<-c(vec, isoform_dat[as.character(isoNames),i])
     #print(cbind(Isoform=isoNames,FPKM=as.numeric(isoform_dat[isoNames,i]),Sample=rep(sampleNames[abs(min(samples)-(i+1))],length(isoNames))))
   }
-  print(vec)
+  #print(vec)
   plot_frame<-data.frame(Isoform=rep(isoNames, length(samples)),FPKM=vec,Sample=rep(sampleNames, each = length(isoNames)))
   #print(as.numeric(levels(plot_frame$FPKM)))
   #plot_frame$FPKM<-as.numeric(levels(plot_frame$FPKM))[as.numeric(plot_frame$FPKM)]
-  plot_frame[plot_frame$FPKM<=1,2]<-1
-  print((plot_frame))
-  a<-ggplot(data = plot_frame, aes(x=Isoform, y=FPKM, fill=Sample))
+  #plot_frame[plot_frame$FPKM<=1,2]<-1
+  #high<-tapply(plot_frame$FPKM, list(plot_frame$Sample, plot_frame$Isoform), FUN = function(x) quantile(x, 0.95))
+  #low<-tapply(plot_frame$FPKM, list(plot_frame$Sample, plot_frame$Isoform), FUN = function(x) quantile(x, 0.05))
+  mean<-tapply(plot_frame$FPKM, list(plot_frame$Sample, plot_frame$Isoform), FUN = function(x) mean(x))
+  sd<-tapply(plot_frame$FPKM, list(plot_frame$Sample, plot_frame$Isoform), FUN=function(x) sd(x))
+  print(sd)
+  #print(low)
+  plot_frame<-cbind(plot_frame,
+                    Mean=apply(plot_frame,1,function(x) mean[x[3],x[1]]),
+                    High=apply(plot_frame,1,function(x) mean[x[3],x[1]]+sd[x[3],x[1]]),
+                    Low=apply(plot_frame,1,function(x) mean[x[3],x[1]]-sd[x[3],x[1]]))
+  #plot_frame<-cbind(plot_frame, Col=as.character(wes_palette("Zissou")[factor(plot_frame$Sample)]))
+  #print((plot_frame))
+  plot_frame$Sample<-factor(plot_frame$Sample, levels = c("DOD", "NED", "TC32 WT", "TC32 shFli1", "TC32 YK"))
+  a<-ggplot(data = plot_frame, aes(x=Isoform, y=Mean, ymin=Low, ymax=High,fill=Sample))
   a<-a+geom_bar(stat = "identity", position="dodge")
-  a<-a+scale_y_log10()
-  a<-a+coord_flip()
-  a
+  a<-a+scale_fill_manual(values = rev(wes_palette("Cavalcanti"))[c(1, 5, 2, 4, 3)])
+  a<-a+geom_errorbar(position="dodge", width=0.9)
+  a<-a+ggtitle("YBX1 Isoforms")
+  #a<-a+theme_bw()
+  #a<-a+scale_y_log10()
+  #a<-a+coord_flip()
+  plot(a)
 }

@@ -19,5 +19,6 @@ miListInput<-function(data_PSIs, data_FPKMs){
   #gr.dat<-cbind(PSIs_filter[gr$psi.n,], 
   #              FPKMs_filter[gr$gene.n,])
   #out<-list(DATA=gr.dat, NAMES=gr)
+  #return(out)
   return(list(FPKM=FPKMs_filter, PSI=PSIs_filter))
 }
