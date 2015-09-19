@@ -1,6 +1,7 @@
 ggPlotIsoforms<-function(gene=NULL, samples=c(25:27), order=25, sampleNames=c("TC32 WT", "TC32 shFli1", "TC32 YK"), isoform_dat=isoform_FPKMs){
   require(ggplot2)
   require(wesanderson)
+  require(reshape2)
   isoNames<-grep(gene, row.names(isoform_dat), value = TRUE, fixed = TRUE)
   #isoNames<-factor(isoNames, levels = rev(isoNames))
   #sampleNames<-factor(sampleNames, levels=rev(sampleNames))
@@ -23,6 +24,7 @@ ggPlotIsoforms<-function(gene=NULL, samples=c(25:27), order=25, sampleNames=c("T
   mean<-tapply(plot_frame$FPKM, list(plot_frame$Sample, plot_frame$Isoform), FUN = function(x) mean(x))
   sd<-tapply(plot_frame$FPKM, list(plot_frame$Sample, plot_frame$Isoform), FUN=function(x) sd(x))
   print(sd)
+  print(head(melt(sd)))
   #print(low)
   plot_frame<-cbind(plot_frame,
                     Mean=apply(plot_frame,1,function(x) mean[x[3],x[1]]),
@@ -30,14 +32,17 @@ ggPlotIsoforms<-function(gene=NULL, samples=c(25:27), order=25, sampleNames=c("T
                     Low=apply(plot_frame,1,function(x) mean[x[3],x[1]]-sd[x[3],x[1]]))
   #plot_frame<-cbind(plot_frame, Col=as.character(wes_palette("Zissou")[factor(plot_frame$Sample)]))
   #print((plot_frame))
-  plot_frame$Sample<-factor(plot_frame$Sample, levels = c("DOD", "NED", "TC32 WT", "TC32 shFli1", "TC32 YK"))
+  plot_frame$Sample<-factor(plot_frame$Sample, levels = unique(sampleNames))
   a<-ggplot(data = plot_frame, aes(x=Isoform, y=Mean, ymin=Low, ymax=High,fill=Sample))
   a<-a+geom_bar(stat = "identity", position="dodge")
-  a<-a+scale_fill_manual(values = rev(wes_palette("Cavalcanti"))[c(1, 5, 2, 4, 3)])
+  #a<-a+scale_fill_manual(values = c(colorRampPalette(wes_palette("Rushmore")[-c(1,5)])(24), wes_palette("Zissou")[c(5, 1, 3)]))
+  a<-a+scale_fill_manual(values = c(wes_palette("Cavalcanti")[c(2,3)], wes_palette("Zissou")[c(5, 1, 3)]))
   a<-a+geom_errorbar(position="dodge", width=0.9)
-  a<-a+ggtitle("YBX1 Isoforms")
-  #a<-a+theme_bw()
-  #a<-a+scale_y_log10()
+  a<-a+ggtitle("HOTAIR Isoforms")
+  a<-a+theme_bw()
+  a<-a+ylab("FPKM")
+  #a<-a+scale_y_log10(limits=c(0.00001, 700))
+  #a<-a+ylim(c(1, 500))
   #a<-a+coord_flip()
   plot(a)
 }

@@ -9,6 +9,8 @@ miRNA_autoHyper<-function(miRNA, miRNAhits, set=length(miRNAhits)){
     outvec<-rbind(outvec, c(b, a, phyper(a, b, tot-b, sel, lower.tail = FALSE)))
   }
   row.names(outvec)<-miRNAnames
-  colnames(outvec)<-c("N in total", "N in sample", "pval")
+  print(head(outvec))
+  outvec<-cbind(outvec, p.adjust(outvec[,3], method = "BH"))
+  colnames(outvec)<-c("N in total", "N in sample", "pval", "corPval")
   return(outvec)
 }

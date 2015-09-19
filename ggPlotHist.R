@@ -1,0 +1,15 @@
+ggPlotHist<-function(PB, hg19){
+  require(ggplot2)
+  require(wesanderson)
+  a<-data.frame(Length = width(PB), Source = rep("PacBio", length(PB)))
+  a<-rbind(a, data.frame(Length = width(hg19), Source = rep("knownGene", length(hg19))))
+  gg<-ggplot(a, aes(x = Length, y = ..density.., fill = Source, col = Source))
+  gg<-gg+geom_histogram(, binwidth=100, position="identity", alpha = 0.2)
+  gg<-gg+geom_freqpoly(binwidth=200, alpha = 1)
+  gg<-gg+xlim(c(250, 12000))
+  gg<-gg+ylab("Density")
+  gg<-gg+scale_color_manual(values = wes_palette("Zissou")[c(2, 4)])
+  gg<-gg+scale_fill_manual(values = wes_palette("Zissou")[c(2, 4)])
+  gg<-gg+theme_bw()
+  plot(gg)
+}
