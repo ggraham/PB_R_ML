@@ -1,0 +1,38 @@
+---
+title: "Transcript Length Histogram"
+author: "Garrett Graham"
+date: "10/7/2015"
+output: html_document
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(fig.width=7, fig.height=3, fig.path="./Transcript_length_histogram_figures/",
+                      echo=FALSE, warning=FALSE, message=FALSE, dev="cairo_ps", dpi=300)
+```
+
+```{r libraries, echo=FALSE, include=FALSE}
+require(GenomicRanges)
+require(GenomicFeatures)
+require(Gviz)
+require(org.Hs.eg.db)
+require(wesanderson)
+require(ggplot2)
+```
+
+```{r load-dat, echo=FALSE, include=FALSE}
+load("./transcript_sequences.RData")
+df<-data.frame(Length = c(width(hq_seq), width(hg19_seq)), Source = c(rep("PacBio", length(hq_seq)), rep("RefSeq", length(hg19_seq))))
+```
+
+```{r ggplot}
+a<-ggplot(df, aes(x = Length, y = ..density.., fill = Source, col = Source))
+a<-a+geom_histogram(, binwidth=100, position="identity", alpha = 0.2)
+a<-a+geom_freqpoly(binwidth=200, alpha = 1)
+a<-a+xlim(c(200, 12000))
+a<-a+ylab("Density")
+a<-a+scale_color_manual(values = wes_palette("Zissou")[c(2, 4)])
+a<-a+scale_fill_manual(values = wes_palette("Zissou")[c(2, 4)])
+a<-a+theme_bw()
+plot(a)
+```
+

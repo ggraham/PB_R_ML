@@ -1,0 +1,70 @@
+---
+title: "CLK1 Isoforms"
+author: "Garrett Graham"
+date: "10/5/2015"
+output: html_document
+---
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(fig.width=6, fig.height=2, fig.path="./Isoform_render_figures/",
+                      echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r gene, echo=FALSE, include=FALSE}
+g<-"CLK1"
+```
+
+```{r libraries, echo=FALSE, include=FALSE}
+require(GenomicRanges)
+require(GenomicFeatures)
+require(Gviz)
+require(org.Hs.eg.db)
+require(wesanderson)
+```
+
+```{r TxDbs-coordinates, echo=FALSE, include=FALSE}
+
+txdbRS<-makeTxDbFromGFF("../../RIPseq/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf")
+txdbPB<-makeTxDbFromGFF("../collapse/complete/ES_ALL_1_10.hq.transcriptome.collapsed.gff", "gtf")
+pb.granges<-transcripts(txdbPB)
+hs<-org.Hs.eg.db
+coord<-select(hs, keys = g, columns = c("CHR", "CHRLOC", "CHRLOCEND"), keytype = "SYMBOL")
+loci<-GRanges(seqnames = paste("chr", coord$CHR, sep = ""), 
+                ranges = IRanges(start = abs(coord$CHRLOC), 
+                                 end = abs(coord$CHRLOCEND), 
+                                 names = g), 
+                strand = ifelse(coord$CHRLOC<0, "-", "+"))
+pbloci<-subsetByOverlaps(pb.granges, loci)
+coordout<-list(GENE = unique(pbloci$gene_id), START = min(start(loci)), END = max(end(loci)), CHR = as.character(unique(seqnames(loci))[1]), STRAND = unique(as.character(strand(loci)))[1])
+```
+
+```{r make-GeneRegionTracks, echo=FALSE}
+idxTrack<-IdeogramTrack(genome="hg19", chromosome = coordout$CHR)
+gaTrack<-GenomeAxisTrack()
+gr1<-GeneRegionTrack(txdbPB, chromosome = coordout$CHR, start = coordout$START, end=coordout$END, name = "PacBio")
+gr2<-GeneRegionTrack(txdbRS, chromosome = coordout$CHR, start = coordout$START, end=coordout$END, name = "RefSeq")
+
+dPars<-list(fontfamily.title="sans", background.title="white", frame=TRUE, col.frame="black", col.title="black", fontcolor="black", fontfamily="sans", showFeatureID=TRUE)
+
+cPB<-c(col2rgb(wes_palette("Zissou")[1])[,1], floor(0.6*255))
+cRS<-c(col2rgb(wes_palette("Zissou")[4])[,1], floor(0.6*255))
+
+displayPars(gr1)<-c(dPars, fill=rgb(red = cPB[1], green = cPB[2], blue = cPB[3], alpha = cPB[4], maxColorValue = 255), col=rgb(red = cPB[1], green = cPB[2], blue = cPB[3], alpha = 255, maxColorValue = 255))
+displayPars(gr2)<-c(dPars, fill=rgb(red = cRS[1], green = cRS[2], blue = cRS[3], alpha = cRS[4], maxColorValue = 255), col=rgb(red = cRS[1], green = cRS[2], blue = cRS[3], alpha = 255, maxColorValue = 255))
+```
+
+```{r plotTracks1, echo=FALSE,fig.height=1, fig.width=5}
+#plotTracks(list(idxTrack, gaTrack, gr1, gr2))
+plotTracks(list(gr2))
+```
+
+```{r plotTracks2, echo=FALSE,fig.height=1, fig.width=5}
+#plotTracks(list(idxTrack, gaTrack, gr1, gr2))
+plotTracks(list(gr1))
+```
+
+```{r plotTracks3, echo=FALSE,fig.height=2, fig.width=5}
+#plotTracks(list(idxTrack, gaTrack, gr1, gr2))
+plotTracks(list(gr1, gr2))
+```
+Figure: `r g` isoform plot  
+Isoforms in RefSeq as well as those sequenced by PacBio for `r g` aligned by genomic context. PacBio isoforms are derived from the union of all unique isoforms sequenced in the A4573 and TC32 wild-type and shFli1 cell lines.

@@ -1,0 +1,27 @@
+---
+title: "Transcript and Gene Venn Diagram"
+author: "Garrett Graham"
+date: "10/7/2015"
+output: html_document
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(fig.width=4, fig.height=3, fig.path="./Transcript_gene_venn_figures/",
+                      echo=FALSE, warning=FALSE, message=FALSE, dev="cairo_ps", dpi=300)
+```
+
+```{r libraries, echo=FALSE, include=FALSE}
+require(wesanderson)
+require(VennDiagram)
+```
+
+```{r venn-plot-gene}
+draw.pairwise.venn(area1 = 22092, area2 = 21578, cross.area = 13943, category = c("PacBio", "RefSeq"), lwd = 2, col = c(wes_palette("Zissou")[2], wes_palette("Zissou")[4]), fill=c(wes_palette("Zissou")[2], wes_palette("Zissou")[4]), alpha=c(0.6, 0.6), cex=1.5, fontfamily = c("sans", "sans", "sans"), cat.cex = c(1.7, 1.7), cat.fontfamily = c("sans", "sans"), cat.default.pos = "text", cat.just = list(c(0.4, -1), c(0.6, -1)))
+```
+Venn diagram of the similarity in genomic coordinates between aligned transcripts sequenced by PacBio and overlap with gene coordinates in RefSeq.
+
+***
+```{r venn-plot-transcript}
+draw.pairwise.venn(area1 = 46367, area2 = 42253, cross.area = 8597, category = c("PacBio", "RefSeq"), lwd = 2, col = c(wes_palette("Zissou")[2], wes_palette("Zissou")[4]), fill=c(wes_palette("Zissou")[2], wes_palette("Zissou")[4]), alpha=c(0.6, 0.6), cex=1.5, fontfamily = c("sans", "sans", "sans"), cat.cex = c(1.7, 1.7), cat.fontfamily = c("sans", "sans"), cat.default.pos = "text", cat.just = list(c(0.5, -1), c(0.5, -1)))
+```
+Venn diagram of the similarity in transcript sequence from PacBio compared to transript sequence from RefSeq.

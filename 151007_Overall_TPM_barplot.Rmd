@@ -1,0 +1,45 @@
+---
+title: "Overall TPM Barplot"
+author: "Garrett Graham"
+date: "10/7/2015"
+output: html_document
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(fig.width=4, fig.height=5, fig.path="./Overall_TPM_barplot_figures/",
+                      echo=FALSE, warning=FALSE, message=FALSE, dev="cairo_ps", dpi=300)
+```
+
+```{r libraries, echo=FALSE, include=FALSE}
+require(Gviz)
+require(wesanderson)
+require(ggplot2)
+load("./geneRanges_geneFPKMs.RData")
+```
+
+```{r fpkm-to-tpm}
+fpkmToTPM<-function(fpkm){
+  exp(log(fpkm) - log(sum(fpkm)) + log(1e6))
+}
+gene_TPMs_filter<-apply(gene_FPKMs_filter, MARGIN = 2, fpkmToTPM)
+gene_TPMs_hg19_filter<-apply(gene_FPKMs_hg19_filter, MARGIN = 2, fpkmToTPM)
+gPB<-rowMeans(gene_TPMs_filter)
+gRS<-rowMeans(gene_TPMs_hg19_filter)
+```
+
+```{r data-frame, include=FALSE, echo=FALSE}
+df<-data.frame(FPKM = c(gPB, gRS), Source = rep(c("PacBio", "RefSeq"), times = c(length(gPB), length(gRS))))
+```
+
+```{r ggplot}
+b<-c(1, 10, 40, 160, 640, 3000, 8000, 12000)
+a<-ggplot(df, aes(x = Source, y = FPKM, fill = Source))
+a<-a+geom_boxplot()
+a<-a+theme_bw()
+a<-a+scale_fill_manual(values = wes_palette("Zissou")[c(2, 4)])
+a<-a+ylab("TPM")
+a<-a+xlab("Source")
+a<-a+scale_y_log10(breaks = b, limits=c(1, 12500))
+plot(a)
+```
+

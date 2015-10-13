@@ -1,0 +1,31 @@
+---
+title: "Events Bargraph"
+author: "Garrett Graham"
+date: "10/7/2015"
+output: html_document
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(fig.width=7, fig.height=3, fig.path="./Event_bargraph_figures/",
+                      echo=FALSE, warning=FALSE, message=FALSE, dev="cairo_ps", dpi=300)
+```
+
+```{r libraries, echo=FALSE, include=FALSE}
+require(wesanderson)
+require(ggplot2)
+```
+
+```{r load-miso-numbers, include=FALSE}
+df<-data.frame(N=c(4570, 2608, 362, 1217, 2124, 7645, 768, 840, 1985, 2614), Source = rep(c("PacBio", "RefSeq"), each = 5), Event = factor(rep(c("SE", "RI", "MXE", "A5SS", "A3SS"),2), levels = c("SE", "RI", "MXE", "A5SS", "A3SS"), ordered = TRUE))
+```
+
+```{r ggplot}
+a<-ggplot(df, aes(x=Event, y=N, fill=Source))
+a<-a+geom_bar(stat="identity", position="dodge")
+a<-a+theme_bw()
+a<-a+scale_fill_manual(values = wes_palette("Zissou")[c(2, 4)])
+a<-a+ylab("Number of events annotated")
+a<-a+xlab("Type of event")
+plot(a)
+```
+

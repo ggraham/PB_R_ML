@@ -1,0 +1,68 @@
+---
+title: "TPM Scatterplot"
+author: "Garrett Graham"
+date: "10/5/2015"
+output: html_document
+---
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(fig.width=7, fig.height=4, fig.path="./TPM_scatterplot_figures/",
+                      echo=FALSE, warning=FALSE, message=FALSE, dev="cairo_ps", dpi=300)
+```
+
+```{r libraries, echo=FALSE, include=FALSE}
+require(GenomicRanges)
+require(GenomicFeatures)
+require(org.Hs.eg.db)
+require(wesanderson)
+require(ggplot2)
+```
+
+```{r overlap-table, include=FALSE}
+load("./geneRanges_geneFPKMs.RData")
+load("./transcriptRanges.RData")
+oV<-findOverlaps(query = genesPB, subject = genesRS, maxgap=50)
+ovD1<-duplicated(queryHits(oV))
+ovD2<-duplicated(subjectHits(oV))
+dupVec<-c(ovD1 | ovD1)
+pbNames_dDup<-names(genesPB)[queryHits(oV)][!dupVec]
+rsNames_dDup<-names(genesRS)[subjectHits(oV)][!dupVec]
+ovE1<-pbNames_dDup%in%row.names(gene_FPKMs_filter)
+ovE2<-rsNames_dDup%in%row.names(gene_FPKMs_hg19_filter)
+dupVec2<-c(ovE1 & ovE2)
+pbN<-pbNames_dDup[dupVec2]
+rsN<-rsNames_dDup[dupVec2]
+```
+
+```{r fpkm-to-tpm}
+fpkmToTPM<-function(fpkm){
+  exp(log(fpkm) - log(sum(fpkm)) + log(1e6))
+}
+gene_TPMs_filter<-apply(gene_FPKMs_filter, MARGIN = 2, fpkmToTPM)
+gene_TPMs_hg19_filter<-apply(gene_FPKMs_hg19_filter, MARGIN = 2, fpkmToTPM)
+gPB<-rowMeans(gene_TPMs_filter[pbN,])
+gRS<-rowMeans(gene_TPMs_hg19_filter[rsN,])
+```
+
+```{r isoform-count, include=FALSE}
+tPB<-table(names(transcriptsPBbyGene))
+tRS<-table(names(transcriptsRSbyGene))
+tPB<-tPB[pbN]
+tRS<-tRS[rsN]
+```
+
+```{r data-frame, include=FALSE}
+df<-data.frame(PacBio=gPB, RefSeq=gRS, IsoformRatio=log2(tPB/tRS))
+```
+
+```{r ggplot}
+b<-c(1, 10, 40, 160, 640, 3000, 8000, 12000)
+a<-ggplot(df, aes(x=RefSeq, y=PacBio, colour=cut(IsoformRatio, c(5, 1, -1, -5))))
+a<-a+geom_point(alpha=0.6)
+#a<-a+scale_color_discrete(colours=wes_palette("Rushmore")[c(4, 2, 5)])
+a<-a+scale_x_log10(breaks = b, limits=c(1, 12500))
+a<-a+scale_y_log10(breaks = b, limits=c(1, 12500))
+a<-a+theme_bw()
+a<-a+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+plot(a)
+```
+
